@@ -1,0 +1,55 @@
+Starting Nmap 7.80 ( https://nmap.org ) at 2023-11-19 17:54 EET                                                                                                                               
+Nmap scan report for 172.28.128.3                                                                                                                                                             
+Host is up (0.00039s latency).                                                                                                                                                                
+Not shown: 65525 filtered ports                                                                                                                                                               
+PORT     STATE  SERVICE     VERSION                                                                                                                                                           
+21/tcp   open   ftp         ProFTPD 1.3.5                                                                                                                                                     
+22/tcp   open   ssh         OpenSSH 6.6.1p1 Ubuntu 2ubuntu2.13 (Ubuntu Linux; protocol 2.0)                                                                                                   
+| ssh-hostkey:                                                                                                                                                                                
+|   1024 2b:2e:1f:a4:54:26:87:76:12:26:59:58:0d:da:3b:04 (DSA)                                                                                                                                
+|   2048 c9:ac:70:ef:f8:de:8b:a3:a3:44:ab:3d:32:0a:5c:6a (RSA)                                                                                                                                
+|   256 c0:49:cc:18:7b:27:a4:07:0d:2a:0d:bb:42:4c:36:17 (ECDSA)                                                                                                                               
+|_  256 a0:76:f3:76:f8:f0:70:4d:09:ca:e1:10:fd:a9:cc:0a (ED25519)                                                                                                                             
+80/tcp   open   http        Apache httpd 2.4.7                                                                                                                                                
+| http-ls: Volume /                                                                                                                                                                           
+| SIZE  TIME              FILENAME                                                                                                                                                            
+| -     2020-10-29 19:37  chat/                                                                                                                                                               
+| -     2011-07-27 20:17  drupal/                                                                                                                                                             
+| 1.7K  2020-10-29 19:37  payroll_app.php                                                                                                                                                     
+| -     2013-04-08 12:06  phpmyadmin/                                                                                                                                                         
+|_
+|_http-server-header: Apache/2.4.7 (Ubuntu)
+|_http-title: Index of /
+445/tcp  open   netbios-ssn Samba smbd 3.X - 4.X (workgroup: WORKGROUP)
+631/tcp  open   ipp         CUPS 1.7
+| http-methods: 
+|_  Potentially risky methods: PUT
+| http-robots.txt: 1 disallowed entry 
+|_/
+|_http-server-header: CUPS/1.7 IPP/2.1
+|_http-title: Home - CUPS 1.7.2
+3000/tcp closed ppp
+3306/tcp open   mysql       MySQL (unauthorized)
+3500/tcp open   http        WEBrick httpd 1.3.1 (Ruby 2.3.8 (2018-10-18))
+| http-robots.txt: 1 disallowed entry 
+|_/
+|_http-server-header: WEBrick/1.3.1 (Ruby/2.3.8/2018-10-18)
+|_http-title: Ruby on Rails: Welcome aboard
+6697/tcp open   irc         UnrealIRCd
+| irc-info: 
+|   users: 1
+|   servers: 1
+|   lusers: 1
+|   lservers: 0
+|_  server: irc.TestIRC.net
+8080/tcp open   http        Jetty 8.1.7.v20120910
+|_http-server-header: Jetty(8.1.7.v20120910)
+|_http-title: Error 404 - Not Found
+8181/tcp closed intermapper
+MAC Address: 08:00:27:E0:15:6B (Oracle VirtualBox virtual NIC)
+Device type: general purpose
+Running: Linux 3.X|4.X
+OS CPE: cpe:/o:linux:linux_kernel:3 cpe:/o:linux:linux_kernel:4
+OS details: Linux 3.2 - 4.9
+Network Distance: 1 hop
+Service Info: Hosts: 127.0.2.1, METASPLOITABLE3-UB1404, irc.TestIRC.net; OSs: Unix, Linux; CPE: cpe:/o:linux:linux_kernel

