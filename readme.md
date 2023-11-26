@@ -583,7 +583,7 @@ We get shell although not with root privileges, but most surprisingly snort did 
 
 Intrusion Detection Systems (IDS) play a pivotal role in fortifying cybersecurity defenses, offering both benefits and shortcomings.
 
-Their primary benefit lies in early threat detection through continuous monitoring of network traffic, offering real-time alerts for prompt responses. By detecting potential threats early, IDS can prevent unauthorized access and protect sensitive data. Furthermore, IDS can provide valuable insights into attack patterns, helping to improve future security measures. [1] [2]
+Their primary benefit lies in early threat detection through continuous monitoring of network traffic, offering real-time alerts for prompt responses. By detecting potential threats early, IDS can prevent unauthorized access and protect sensitive data. Furthermore, IDS can provide valuable insights into attack patterns, helping to improve future security measures.
 
 However, IDS come with limitations. False positives and negatives can hinder their effectiveness, leading to unnecessary alerts or undetected threats. Signature-based IDS may struggle with new attacks since they a rule to be able to detect them, and resource-intensive operations can impact network performance. The rise of encrypted traffic poses a challenge, limiting the system's ability to inspect concealed threats.
 
