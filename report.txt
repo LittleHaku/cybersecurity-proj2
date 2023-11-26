@@ -1,0 +1,2 @@
+This project goal is to learn how to compromise a virtual machine that is running Metasploitable 3 and Snort to detect possible attacks. Five attacks will be performed, three of them will be recognized by Snort, but the other two will not be identified.
+
