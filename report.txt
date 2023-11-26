@@ -1,7 +1,7 @@
-To see a more detailed explanation of the project, please visit the repository. Here I have omitted outputs, details and one attack that I did not manage to do to stay within the word limit, apart from that in GitHub the report is formatted and not in plain text.
+To see a more detailed explanation of the project, please visit the repository. Hereoutputs, details and one failed attack were omitted to stay within the word limit, apart from that, in GitHub the report is formatted and not in plain text.
 https://github.com/LittleHaku/cybersecurity-proj2
 
-This project's goal is to learn how to compromise a virtual machine that is running Metasploitable 3 and Snort to detect possible attacks, the Snort rules that I used were the ones that are given in the snort.conf file in the course. Five attacks will be performed, three of them will be recognized by Snort, but the other two will not be identified.
+This project goal is to learn how to compromise a virtual machine that is running Metasploitable 3 and Snort to detect possible attacks. The Snort rules that I used were the ones that were given in the snort.conf file in the course. Five attacks will be performed, three of them will be recognized by Snort, but the other two will not be identified.
 
 Before doing any attack, we must first obtain the open ports of the machine, for this, we will use the tool Nmap, which will let us see which ports are open and which services are running on them.
 
@@ -107,7 +107,7 @@ The exploit is executed successfully, resulting in a Meterpreter session:
 
 Note that the exploit was not detected by Snort, as the attack was not logged, this may be due to the fact that we already had the credentials.
 
-We now know that the previously obtained credentials are working, thus we access the VM 172.28.128.3 from the browser and use these credentials to log into payroll_app.php which gives us a successful login but with no information. We also tried to log in with the credentials in the PHPMyAdmin page leading to a successful login.
+We now know that the previously obtained credentials are working, thus we access the VM 172.28.128.3 from the browser and use these credentials to log into payroll_app.php which gives us a successful login but with no information. We also tried to log in with the credentials on the PHPMyAdmin page leading to a successful login.
 
 Further exploration of the PHPMyAdmin interface uncovers a database named Drupal with a table "users" containing hashed passwords. Additionally, within the MySQL database, a table "users" is found with a hashed root password. Although these hashes are stored for potential future cracking with a tool like John The Ripper. Lastly, we access the database payroll and table users which contains usernames and plain text passwords which can be used to log into the payroll_app.php page and get their information.
 
@@ -150,3 +150,14 @@ uid=1121(boba_fett) gid=100(users) groups=100(users),999(docker)
 
 We get shell although not with root privileges, but most surprisingly snort did not detect the attack.
 
+------------------------------------------------------------
+
+The benefits and shortcomings of using intrusion detection systems
+
+Intrusion Detection Systems (IDS) play a pivotal role in fortifying cybersecurity defences, offering both benefits and shortcomings.
+
+Their primary benefit lies in early threat detection through continuous monitoring of network traffic, offering real-time alerts for prompt responses. By detecting potential threats early, IDS can prevent unauthorized access and protect sensitive data. Furthermore, IDS can provide valuable insights into attack patterns, helping to improve future security measures. [1] [2]
+
+However, IDS come with limitations. False positives and negatives can hinder their effectiveness, leading to unnecessary alerts or undetected threats. Signature-based IDS may struggle with new attacks since they require a rule to be able to detect them, and resource-intensive operations can impact network performance. The rise of encrypted traffic poses a challenge, limiting the system's ability to inspect concealed threats.
+
+In conclusion, while IDS are an essential tool in cybersecurity, their effectiveness is contingent upon proper implementation and ongoing management. Despite their shortcomings, the provided benefits in terms of early detection and prevention of intrusions make them a worthwhile investment.
