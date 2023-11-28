@@ -1,5 +1,11 @@
 # Cyberscecurity Project 2
 
+## Introduction
+
+Within this project, we'll utilize the Metasploit Framework to execute diverse attacks on a virtual machine (VM) hosting Metasploitable 3 and running Snort. The plan involves conducting five attacks, with three of them being detectable by Snort, while the remaining two will go undetected by Snort.
+
+## Setting up the Metasploitable VM
+
 First in the Metasploitable VM we will retrieve the IP and then we will initialize snort:
 
 IP: `172.28.128.3`
